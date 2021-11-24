@@ -10,10 +10,13 @@ function App() {
   
  const [task, setTask]=useState("");
  const [tasks, setTasks] = useState([]);
-
- const addTask=(e)=>{
-e.preventDefault();
- if(isEmpty(task)){
+ const [editMode, seteditMode] = useState(false);
+ const [id, setId] = useState("");
+ 
+ const
+  addTask=(e)=>{
+  e.preventDefault();
+   if(isEmpty(task)){
    console.log("Actividad Vacia....")
    return;
  }
@@ -28,9 +31,31 @@ e.preventDefault();
  
  setTask("");
 }
+
+const saveTask=(e)=>{
+  e.preventDefault()
+  if(isEmpty(task)){
+    console.log("Task Empty")
+    return
+  }
+
+  const editTasks=tasks.map(item=>item.id===id ? {id, name: task}: item);
+  setTasks(editTasks);
+  seteditMode(false);
+  setTask("");
+  setId("");
+
+}
+
 const deleteTask =(id)=>{
   const filteredTask=tasks.filter(task=>task.id!==id)
   setTasks(filteredTask);
+}
+
+const editTask =(theTask)=>{
+  setTask(theTask.name)
+  seteditMode(true);
+  setId(theTask.id)
 }
 
   return (
@@ -59,7 +84,7 @@ const deleteTask =(id)=>{
                 </button>
                 <button 
                   className="btn btn-warning btn-sm float-right"
-                  
+                  onClick={()=>editTask(task)}
                 >
                   Editar
                 </button>
@@ -75,13 +100,14 @@ const deleteTask =(id)=>{
 
         </div>
         <div className="col-4">
-          <h4>Formulario</h4>
-          <form onSubmit={addTask}>
+          <h4>
+            {editMode?"Modificar Actividad" : "Agregar Actividad"}</h4>
+          <form onSubmit={ editMode ? saveTask : addTask}>
             <input type="text" className="form-control" mb-2 placeholder="Ingrese La Actividad..."
             onChange={(text)=>setTask(text.target.value)}
             value={task}
             />
-            <button className="btn btn-dark btn-block" type="submit">Agregar</button>
+            <button className={editMode ? "btn btn-warning btn-block":"btn btn-dark btn-block"} type="submit">{editMode ? "Guardar" : "Agregar"}</button>
           </form>
         </div>
       </div>
