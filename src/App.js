@@ -12,15 +12,24 @@ function App() {
  const [tasks, setTasks] = useState([]);
  const [editMode, seteditMode] = useState(false);
  const [id, setId] = useState("");
+ const [error, setError] = useState(null);
  
+const validForm=()=>{
+  let isValid=true;
+  setError(null);
+  if(isEmpty(task)){
+  setError("Debe Ingresar Una Actividad");
+  isValid=false;
+  }
+  return isValid;
+}
+
  const
   addTask=(e)=>{
   e.preventDefault();
-   if(isEmpty(task)){
-   console.log("Actividad Vacia....")
-   return;
- }
-
+if(!validForm()){
+  return
+}
  const newTask={
    id: shortid.generate(),
    name: task
@@ -34,8 +43,7 @@ function App() {
 
 const saveTask=(e)=>{
   e.preventDefault()
-  if(isEmpty(task)){
-    console.log("Task Empty")
+  if(!validForm()){
     return
   }
 
@@ -68,7 +76,7 @@ const editTask =(theTask)=>{
       
       {    
         size(tasks)===0?(
-          <h5 className="text-center">Aun No Hay Actividades Programadas</h5>
+          <li className="list-group-item">Aun No Hay Actividades Programadas</li>
         ):(
 
         <ul className="list-group">
@@ -107,6 +115,9 @@ const editTask =(theTask)=>{
             onChange={(text)=>setTask(text.target.value)}
             value={task}
             />
+            {
+              error && <span classNam="text-danger">{error}</span>
+            }
             <button className={editMode ? "btn btn-warning btn-block":"btn btn-dark btn-block"} type="submit">{editMode ? "Guardar" : "Agregar"}</button>
           </form>
         </div>
