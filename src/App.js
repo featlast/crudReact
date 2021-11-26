@@ -1,8 +1,8 @@
+import React, { useState, useEffect } from 'react'
+import { isEmpty, size } from 'lodash'
+import { addDocument, deleteDocument, getCollection, updateDocument } from './actions'
 
-
-import { isEmpty,size } from 'lodash';
-import React, {useState} from 'react';
-import shortid from 'shortid';
+//import {querySnapshot} from './actions'
 
 
 function App() {
@@ -12,30 +12,58 @@ function App() {
  const [tasks, setTasks] = useState([]);
  const [editMode, seteditMode] = useState(false);
  const [id, setId] = useState("");
+ const [error, setError] = useState(null);
  
+ useEffect(() => {
+  (async () => {
+    const result = await getCollection("tasks")
+    if (result.statusResponse) {
+      setTasks(result.data)
+    }
+  })()
+}, [])
+
+const validForm=()=>{
+  let isValid=true;
+  setError(null);
+  if(isEmpty(task)){
+  setError("Debe Ingresar Una Actividad");
+  isValid=false;
+  }
+  return isValid;
+}
+
  const
-  addTask=(e)=>{
+  addTask= async(e)=>{
   e.preventDefault();
-   if(isEmpty(task)){
-   console.log("Actividad Vacia....")
-   return;
+if(!validForm()){
+  return
+}
+
+
+
+ const result= await addDocument("tasks", {name: task})
+ if(!result.statusResponse){
+  setError(result.error)
+  return
  }
 
- const newTask={
-   id: shortid.generate(),
-   name: task
- }
-
- setTasks([...tasks, newTask]);
+ setTasks([...tasks, {id: result.data.id, name: task}]);
+ setTask("")
 
  
  setTask("");
 }
 
-const saveTask=(e)=>{
+const saveTask=async(e)=>{
   e.preventDefault()
-  if(isEmpty(task)){
-    console.log("Task Empty")
+  if(!validForm()){
+    return
+  }
+
+  const result= await updateDocument("tasks", id, {name: task})
+  if(!result.statusResponse){
+    setError(result.error)
     return
   }
 
@@ -47,7 +75,14 @@ const saveTask=(e)=>{
 
 }
 
-const deleteTask =(id)=>{
+const deleteTask =async(id)=>{
+
+const result= await deleteDocument("tasks", id)
+if(!result.statusResponse){
+  setError(result.error)
+  return
+}
+
   const filteredTask=tasks.filter(task=>task.id!==id)
   setTasks(filteredTask);
 }
@@ -68,7 +103,7 @@ const editTask =(theTask)=>{
       
       {    
         size(tasks)===0?(
-          <h5 className="text-center">Aun No Hay Actividades Programadas</h5>
+          <li className="list-group-item">Aun No Hay Actividades Programadas</li>
         ):(
 
         <ul className="list-group">
@@ -107,6 +142,9 @@ const editTask =(theTask)=>{
             onChange={(text)=>setTask(text.target.value)}
             value={task}
             />
+            {
+              error && <span classNam="text-danger">{error}</span>
+            }
             <button className={editMode ? "btn btn-warning btn-block":"btn btn-dark btn-block"} type="submit">{editMode ? "Guardar" : "Agregar"}</button>
           </form>
         </div>
